@@ -1,0 +1,98 @@
+\documentclass[a4paper,UTF8]{ctexart}
+\usepackage{ctex}
+\usepackage[margin=1.25in]{geometry}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+%\usepackage[thmmarks, amsmath, thref]{ntheorem}
+\theoremstyle{definition}
+\newtheorem*{solution}{Solution}
+\newtheorem*{prove}{Proof}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+
+
+
+%code
+%\usepackage[utf8]{inputenc}
+ 
+\usepackage{listings}
+\usepackage{color}
+ 
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+ 
+\lstset{style=mystyle}
+%code
+
+
+
+
+
+
+
+
+
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Procedure:}}
+\renewcommand\refname{参考文献}
+
+%--
+
+%--
+\begin{document}
+\title{使用强化学习进行神经组合优化}
+\author{Irwan Bello∗, Hieu Pham∗, Quoc V. Le, Mohammad Norouzi, Samy Bengio}
+\maketitle
+\begin{abstract}
+这篇paper 提供一个框架，使用神经网络和强化学习来解决(tackle)组合优化问题.我们致力于TSP问题。给定一个城市坐标(city coordinates)集合，通过训练递归神经网络预测不同的城市序列(city permutations)的分布.通过使用负的旅行长度作为奖赏信号(reward signal)，我们使用梯度下降策略优化递归神经网络的参数.我们对在一系列训练图上训练参数和单个测试图上训练参数进行比较。尽管有计算费用，但是没有太多的工程和启发式设计(heuristic designing)，神经组合优化在高达100个节点的二维欧几里德图的结果达到接近最优。应用到背包问题和另一个NP-hard问题，相同的方法获得高达200物品的实例的最优解
+\end{abstract}
+
+\section{引论}
+
+\emph{组合优化}是计算机科学中的基础问题.一个权威(canonical)例子 是旅行商问题(TSP),问题描述如下:给定一个图，解决者需要搜索序列空间(space of permutations)找到拥有最短的边长度的点的最优序列(tour length).TSP和它的变种问题在计划(plan),制造业(manufacturing),遗传学(genetics)等拥有无数(myriad)应用
+
+找到TSP问题的最优解是NP-hard,即使在一个两维的欧式空间(点是2D的,边的权重是欧式距离)中.在实践中，TSP求解器依赖手工启发式(handcrafted heuristics)指导他们的搜索程序高效找到有竞争力的旅行路径.即使这些启发式在TSP问题上工作很好，一旦问题陈述稍微改变，就需要修改(be revised).相反，机器学习方法有在许多优化任务上可应用的潜力，因为它基于训练数据发现每个任务的启发式。所以比专门为一个任务优化的求解器需要更少的hand-engineering。
+
+尽管大多数成功的机器学习技术归于监督学习(supervised learning)家族(学习从训练数据的输入到输出的映射),监督学习对绝多数组合优化问题并不是可应用的，因为并不能获得最优的标签(optimal labels).但是你能使用一个验证者(verifier)比较一系列解决方案的质量,提供一些奖赏回报(reward feedbacks)给一个学习算法.所以，我们遵循强化学习(RL)范式(paradigm)来解决组合优化问题。我们经验性地证明(empirically demonstrate),即使使用标签数据来优化监督映射的优化方法，也远逊色于一个探索不同的旅行路径和观察它们相应的奖赏的强化学习算法(RL agent)
+
+我们建议(propose)神经组合优化，一个用强化学习算法和神经网络来解决组合优化问题的框架。我们考虑两种基于梯度策略的方法.第一种方法，叫做RL预训练(RL pretraining),使用一个训练集合来优化一个递归神经网络(RNN),确定解决方案的随机策略的参数(parameterizes a tochastic policy over solutions),使用期望的奖赏作为目标(using the expected reward s objective).在测试时，策略是固定的(fixed),通过贪婪解码或采样进行推断(one performs inference by greedy decoding or sampling).第二种方法，叫做积极搜索(active search),没有预训练。它从一个随机策略开始，在一个测试实例上迭代地优化RNN 参数。然后使用期望的奖赏目标，同时跟踪在搜索期间采样得到的最好的解决方案。我们发现实践中联合RL预训练和积极搜索工作最好.
+
+在有100个点的2D欧式图中,神经组合优化显著胜过(outperforms)监督学习,并且在允许更多的计算时间的情况下获得近似最优解的解。我们通过测试同样的方法在背包问题上的应用来阐述它的灵活性(flexibility)，我们在高达200个物品的实例上获得最优解。这些结果给出了神经网络是如何作为一个通用工具解决组合优化问题的见解，尤其是那些很难设计启发式的问题。
+
+\section{前导工作}
+旅行商问题是一个已经研究很好的组合优化问题，许多确定的或近似的算法为解决欧式和非欧式的图被提出。Christofides(1976) 提出一个启发式的算法，包括计算一个最小生成树(minimum-spanning tree)和一个最小权完美匹配(minimum-weight perfect matching).这个算法有多项式运行时间，返回一个结果，这个结果保证在1.5*最优解之内。
+
+TSP最好的确定性动态规划算法的复杂度为$\Theta(2^nn^2)$,在规模较大的实例上这个算法是不可行的(infeasible)，比如说40个点。然而，感谢精心编写的描述如何以高效的方式遍历(navigate)可行解空间的启发式，TSP求解器的最新进展(state of the art TSP solvers),可以解决上千个点的对称的TSP实例。Concorder(Applegate etal.,2006),广泛地被接受为最好的确定性TSP求解器，利用割平面算法(Dantzig et al.,1954;Padberg \& Rinaldi,1990;Applegate et al.,2003),迭代解决TSP的线性规划松弛，结合(in conjunction with) 修剪(prunes)被证明(provably)不会包含最优解的搜索空间的分枝定界方法(branch-and-bound approach)(英文原文:in conjunction with a branch-andbound approach that prunes parts of the search space that provably will not contain an optimal solution.).类似地，Lin-Kernighan-Helsgaun 启发式(Helsgaun,2000),启发自(inspired from)Lin-Kernighan heuristic(Lin \& Kernighan,1973),是对称TSP的近似搜索启发式的最新进展(state of the art),并且已被证明(has been shown)可以解决数百个节点的实例到最优性(to optimality)。
+
+更多的一般的求解器，比如 Google's  车辆调度问题(vehicle routing problem)求解器(Google,2016)解决了TSP的超集(superset of the TSP),典型地依赖于local search algorithms和metaheuristics的组合。local search algorighms 将指定的本地移动操作符集合应用于候选解决方案(apply a specified set of local move operators on candidate solutions),基于一个手工设计(hand-engineered)的启发式比如 2-opt(Johnson,1990),在搜索空间中从一个解决方案导航(navigate)到另一个解决方案
+\end{document}
