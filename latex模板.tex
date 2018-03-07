@@ -104,4 +104,18 @@ TSP最好的确定性动态规划算法的复杂度为$\Theta(2^nn^2)$,在规模
 softmaxes 以受监督的方式训练以预测访问城市的顺序.尽管在结构上有所改进，但他们的模型使用由近似解算器(appromixate solver)给出的监督信号(supervised signal)进行训练
 
 \section{TSP的神经网络框架}
+在这篇paper中我们集中于2D Euclidean TSP.给定一个输入图,输入形式为在二维空间中的n个城市的集合$s=\{{X_i}\}^n_{i=1}$,其中每个$x_i \in \mathbb{R}^2$,我们关心找到点的序列$\pi$,称为游览(termed a tour),以最短的总长度游览每一个城市。我们定义一个序列$\pi$的长度是
+\begin{equation}
+L(\pi | s)={||X_{\pi (n)}-X_{\pi (1)}||}_2+\sum_{i=1}^{n-1} {||X_{\pi (i)}-X_{\pi (i+1)}||}_2
+\end{equation}
+其中${||\cdot||}_2$表示(denote)$l_2$范式
+
+我们旨在学习一个随机(stochastic)策略$p(\pi | s)$的参数，即给定一个点集$s$的输入，分配(assign)高的概率给短的游览，低的概率给长的游览。我们的神经网络框架使用链式法则(chain rule)来因式分解(factorize)一个游览的概率如下:
+
+\begin{equation}\label{eq2}
+p(\pi |s)=\prod_{i=1}^n p(\pi (i)| \pi (< i),s),
+\end{equation}
+然后使用独立的(individual)softmax模块来代表公式\eqref{eq2}中的RHS方向的每一项
+
+我们被之前的工作所启发(inspired)(Sutskever et al.,2014),利用基于链式法则的相同的因式分解,其曾被用来解决(address)如机器翻译的序列到序列的问题.我们可以用一个普通的(vanilla)序列到序列的模型来解决TSP,其中TSP的输出内容(output vocabulary)是$\{1,2,...,n\}$.
 \end{document}
