@@ -117,5 +117,7 @@ p(\pi |s)=\prod_{i=1}^n p(\pi (i)| \pi (< i),s),
 \end{equation}
 然后使用独立的(individual)softmax模块来代表公式\eqref{eq2}中的RHS方向的每一项
 
-我们被之前的工作所启发(inspired)(Sutskever et al.,2014),利用基于链式法则的相同的因式分解,其曾被用来解决(address)如机器翻译的序列到序列的问题.我们可以用一个普通的(vanilla)序列到序列的模型来解决TSP,其中TSP的输出内容(output vocabulary)是$\{1,2,...,n\}$.
+我们被之前的工作所启发(inspired)(Sutskever et al.,2014),利用基于链式法则的相同的因式分解,其曾被用来解决(address)如机器翻译的序列到序列的问题.我们可以用一个普通的(vanilla)序列到序列的模型来解决TSP,其中TSP的输出内容(output vocabulary)是$\{1,2,...,n\}$.但是这种方法(approach)有两个主要问题(major issues):(1)照这样训练的网络不能推广到输入多于n个城市的情况( networks trained in this fashion cannot generalize to inputs with more than n cities.).(2) one needs to have access to groundtruth output permutations to optimize the parameters with conditional log-likelihood. 我们在这篇paper中解决这两个问题(address both issues)
+
+
 \end{document}
