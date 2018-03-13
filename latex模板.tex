@@ -119,5 +119,5 @@ p(\pi |s)=\prod_{i=1}^n p(\pi (i)| \pi (< i),s),
 
 我们被之前的工作所启发(inspired)(Sutskever et al.,2014),利用基于链式法则的相同的因式分解,其曾被用来解决(address)如机器翻译的序列到序列的问题.我们可以用一个普通的(vanilla)序列到序列的模型来解决TSP,其中TSP的输出内容(output vocabulary)是$\{1,2,...,n\}$.但是这种方法(approach)有两个主要问题(major issues):(1)照这样训练的网络不能推广到输入多于n个城市的情况( networks trained in this fashion cannot generalize to inputs with more than n cities.).(2) one needs to have access to groundtruth output permutations to optimize the parameters with conditional log-likelihood. 我们在这篇paper中解决这两个问题(address both issues)
 
-
+为了超出一个预指定(pre-specified)图的大小的泛化(for generalization beyond a pre-specified graph size),我们遵循(Vinyals et al.,2015b)的方法，即利用无参数softmax 模块，类似于(resembling) 注意力机制(attention mechanism)(Bahdanau et al.,2015).这种被命名为pointer network的方法，允许模型有效地(effectively)地指向输入序列中的一个特定位置，而不是预测一个固定大小的(fixed-size)词汇的索引值。我们使用(employ) pointer network 架构，如同在Figure 1中所描述的(depicted),作为我们的策略模型,确定$p(\pi|s)$的参数
 \end{document}
