@@ -76,6 +76,7 @@
 \maketitle
 \begin{abstract}
 对象检测性能，在标准(canonical) PASCAL VOC 数据集上测量，在最近几年一直稳定(plateau）.最优性能的方法是复杂集成系统(complex ensemble system)典型地联合(combine)多个(multiple）低层次的图像特征和高层次的内容。在这篇paper中，我们提出一个简单并且可扩展的检测算法，提升了平均精度mAP(mean average precision)30个百分点，相对于之前在VOC 2012 中最好的结果-获得 53.3\%的mAP.我们的方法联合两个关键的见解(key insights):(1)人们可以将高容量(high-capacity)卷积神经网络（CNN）应用于自下而上的区域候选以便定位和分割对象.以及(2) 当有标记训练数据稀缺(scarce)时,一个辅助(auxiliary)任务的监督预训练，紧跟着一个特定领域的微调(domain-specific fine-tuning),这种训练方式,产生了(yield)一个显著的性能提升(signficant performance boost），因为我们结合了区域候选和CNN,所以我们叫我们的方法R-CNN:结合CNN特征的区域.整个系统的源代码提供地址是
+\end{abstract}
 
 \section{介绍}
 特征很重要(feature matter).上个世纪在不同视觉识别任务上的进展颇(considerably)基于SIFT和HOG的使用。但是如果我们看在经典(canonical）视觉识别任务--PASCAL VOC物体检测,上的性能,被广泛承认的是，在2010-2012间进展缓慢，，只有通过建立集成系统和使用成功方法的小变体(minor variant)获得的小收益(small gains)
@@ -93,6 +94,14 @@ ILSVRC 2012研讨会期间，ImageNet结果的重要性引起了激烈的争论(
 相反(instead),我们通过在"使用区域识别"范式内操作，来解决CNN定位问题,这个范式被成功的用于目标检测和语义分割.
 在测试时间，我们的方法为输入图像生成大约2000个与分类无关(category-independent)的区域候选，使用CNN从每个候选中提取(extract)固定长度的特征向量，然后使用特定类别的线性SVM对每个区域进行分类。我们使用一个简单的技术(放射图像变形 affine image warping),来计算每个区域候选对应的固定大小的CNN输入，而不考虑区域的形状(regardless of).图1概述了(overview)我们的方法并突出了(highlights)我们的一些结果。由于我们的系统将区域候选与CNN结合在一起，因此我们将该方法称为R-CNN(dub the method R-CNN)：Regions with CNN features
 
-在检测中面临的第二个挑战是带标签数据是稀缺的(scarce),并且目前可用的数量不足以(be insufficient)训练一个大型CNN.这个问题的传统解决方案是使用无监督预训练,然后紧跟着监督微调.
-\end{abstract}
+在检测中面临的第二个挑战是带标签数据是稀缺的(scarce),并且目前可用的数量不足以(be insufficient)训练一个大型CNN.这个问题的传统解决方案是使用无监督预训练,然后紧跟着监督微调.本文的第二个原则贡献是显示对大数据辅助数据集（ILSVRC）进行有监督的预训练，然后对小数据集（PASCAL）进行领域特定(domain-specfic)的微调，这是一种数据稀缺时有效的学习高容量CNN的范式.在我们的誓言中，检测微调提高了mAP 8个百分点。经过微调后，我们的系统在VOC 2010上达到54\% 的MAP，而高度调整(high-tuned)的基于HOG的deformable part model（DPM）则为33\% .我们也向读者指出同时期的(contenporaneous)Donahue等人的工作。 [11]，他们证明Krizhevsky的CNN可以作为黑箱特征提取器使用（不用微调），在几种识别任务中表现出色，包括场景分类，细粒度(fine-grained)的子分类,领域适应(domain adaptation).
+
+我们的系统也非常有效(efficient),唯一的class-specific 计算是相当小的矩阵向量相乘和贪婪的非最大化抑制(non-maximum suppression).这种计算特性遵循所有类别共享的特征，并且也比先前使用的区域特征低两个数量级。
+
+了解我们方法的失效模式(failure modes)对于改进方法也很关键(critical)，因此我们报告了Hoiem等人的检测分析工具的结果。作为这种分析的直接后果(immediate consequence)，我们证明(demonstrate)了一种简单的边界框回归方法显着减少了错误定位，这是主要的错误模式(dominate error mode)。在开发技术细节之前，我们注意到，由于R-CNN在区域上运作，很自然地将它扩展到语义分割的任务。只需稍作修改(minor modifications)，我们还可以在PASCAL VOC分割任务上取得具有竞争力(competitive)的结果，VOC 2011测试集的平均分割准确率为47.9\%
+\section{使用R-CNN做对象检测}
+我们的目标检测系统包括三个模块.第一个生成(generate)类别无关的区域候选。这些候选定义了我们检测器可用的候选检测集.第二个模块是一个大型卷积神经网络从每个区域提取固定长度的特征向量。第三个模块是一个特定类别的线性SVMs的集合。在这个部分，我们呈现每个模块的设计决策，描述他们的测试时间使用情况(，详细了解他们的参数如何学习，并在PASCAL VOC 2010-12上展示结果
+\subsection{模块设计}
+\paragraph{区域候选.} 最近的各种论文提供生成类别独立的区域候选的方法。例子包括:objectness,selective search,category-independent object proposals,constrained parametric min-cuts(CPMC),multi-scale combinatorial grouping,和Ciresfort等人 [6]，他们通过将CNN应用于定期间隔的方形作物来检测有丝分裂细胞，这是区域候选的特例(special case of region proposals),既然R-CNN 对特殊的区域候选方法是不可知的(agnostic),我们使用selective search来确保与之前(prior)检测工作的可控的(controlled)比较
+\paragraph{特征提取.} 我们从每个区域候选提取4096维的特征向量，通过使用Krizhevsky提出的CNN的Caffe方案。通过在五个卷积层和两个全连接层中前向传播(forward propagating)一个mean-subtracted 227*227RGB图像，来计算特征。我们建议读者参考[22,23]来得到更多的网络架构细节。
 \end{document}
