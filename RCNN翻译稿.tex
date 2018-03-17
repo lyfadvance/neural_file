@@ -1,0 +1,84 @@
+\documentclass[a4paper,UTF8]{ctexart}
+%\usepackage{ctex}使用该句会报redefine的bug
+\usepackage[margin=1.25in]{geometry}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+%\usepackage[thmmarks, amsmath, thref]{ntheorem}
+\theoremstyle{definition}
+\newtheorem*{solution}{Solution}
+\newtheorem*{prove}{Proof}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+
+
+
+%code
+%\usepackage[utf8]{inputenc}
+ 
+\usepackage{listings}
+\usepackage{color}
+ 
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+ 
+\lstset{style=mystyle}
+%code
+
+
+
+
+
+
+
+
+
+
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Procedure:}}
+\renewcommand\refname{参考文献}
+
+%--
+
+%--
+\begin{document}
+\title{丰富的特征结构，用于精确的对象检测和语义分割}
+\author{Ross Girshick Jeff Donahue Trevor Darrell Jitendra Malik UC Berkeley}
+\maketitle
+\begin{abstract}
+对象检测性能，在标准(canonical) PASCAL VOC 数据集上测量，在最近几年一直稳定(plateau）.最优性能的方法是复杂集成系统(complex ensemble system)典型地联合(combine)多个(multiple）低层次的图像特征和高层次的内容。在这篇paper中，我们提出一个简单并且可扩展的检测算法，提升了平均精度mAP(mean average precision)30个百分点，相对于之前在VOC 2012 中最好的结果-获得 53.3\%的mAP.我们的方法联合两个关键的见解(key insights):(1)人们可以将高容量(high-capacity)卷积神经网络（CNN）应用于自下而上的区域候选以便定位和分割对象.以及(2) 当有标记训练数据稀缺(scarce)时,一个辅助(auxiliary)任务的监督预训练，紧跟着一个特定领域的微调(domain-specific fine-tuning),这种训练方式,产生了(yield)一个显著的性能提升(signficant performance boost），因为我们结合了区域候选和CNN,所以我们叫我们的方法R-CNN:结合CNN特征的区域.整个系统的源代码提供地址是
+
+\section{介绍}
+特征很重要(feature matter).上个世纪在不同视觉识别任务上的进展颇(considerably)基于SIFT和HOG的使用。但是如果我们看在经典(canonical）视觉识别任务--PASCAL VOC物体检测,上的性能,被广泛承认的是，在2010-2012间进展缓慢，，只有通过建立集成系统和使用成功方法的小变体(minor variant)获得的小收益(small gains)
+SIFT 和HOG 是块定向直方图(blockwise orientation histogram),一种我们可以与V1层中的细胞粗糙(roughly)地联系起来的特征表示.V1层的细胞是灵长类(primate)视觉通路(visual pathway)的第一皮质区域(first cortical area).但是我们也知道识别
+\end{abstract}
+\end{document}
