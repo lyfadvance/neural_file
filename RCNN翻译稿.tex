@@ -79,6 +79,20 @@
 
 \section{介绍}
 特征很重要(feature matter).上个世纪在不同视觉识别任务上的进展颇(considerably)基于SIFT和HOG的使用。但是如果我们看在经典(canonical）视觉识别任务--PASCAL VOC物体检测,上的性能,被广泛承认的是，在2010-2012间进展缓慢，，只有通过建立集成系统和使用成功方法的小变体(minor variant)获得的小收益(small gains)
-SIFT 和HOG 是块定向直方图(blockwise orientation histogram),一种我们可以与V1层中的细胞粗糙(roughly)地联系起来的特征表示.V1层的细胞是灵长类(primate)视觉通路(visual pathway)的第一皮质区域(first cortical area).但是我们也知道识别
+
+SIFT 和HOG 是块定向直方图(blockwise orientation histogram),一种我们可以与V1层中的细胞粗糙(roughly)地联系起来的特征表示.V1层的细胞是灵长类(primate)视觉通路(visual pathway)的第一皮质区域(first cortical area).但我们也知道，识别发生在下游的几个阶段，这表明可能存在分层的，多阶段(multi-stage)的计算特征，这些特征对于视觉识别甚至更具信息性(more informative)
+
+Fukushima的"神经认知机(neocognitron)",一个生物启发的分层和移位不变性的模式识别的模型，是对这种过程的早期尝试(an early attempt at just such a process).神经认知机，但是缺少(lack)一个监督训练算法。建立在Rumelhart等人的基础上(building on)，LeCun等人 表明通过反向传播的随机梯度下降对于训练卷积神经网络（CNNs),即扩展了神经认知机的一类模型，是有效的。
+
+20世纪90年代，CNN被大量使用(saw heavy use)，但随后随着支持向量机的兴起(with the rise of)，它已经不再流行(fell out of fashion)。在2012年，Krizhevsky等人重新激发了(rekindle)CNN的兴趣，通过在ImageNet大规模视觉识别挑战（ILSVRC）上显示出更高的图像分类准确性。他们的成功是通过在120万张标签图像上训练大型CNN，以及LeCun CNN上的一些修改(twists)（例如，max（x; 0）纠正(rectifying)非线性和“dropout”正则化)
+
+ILSVRC 2012研讨会期间，ImageNet结果的重要性引起了激烈的争论(was vigorously debated).中心问题可以归结为以下几点(be distilled to the following)：在多大程度上(to what extent)ImageNet上的CNN分类结果可以归纳为(generalize to)PASCAL VOC挑战中的对象检测结果.我们通过建立图像分裂与对象检测之间的桥梁来回答这个问题(We answer this question by bridging the gap between image classification and object detection).本文首次证明，与基于简单HOG特征的系统相比，CNN可以显着提高PASCAL VOC上的目标检测性能。为了达到这个结果(achieve this result），我们集中在两个问题:使用深度网络对物体进行定位和通过只有少量的注释检测数据训练高容量模型
+
+不像图像分类,检测需要在图像中定位对象(可能很多 likely many)的位置.一种方法将定位定义为回归问题(One approach frames localization as a regression problem).但是来自Szegedy的工作，与我们自己的工作同时(current with our own），表明(indicate）这个策略有可能实际中表现不好(not fare well).(他们报告了VOC 2007中30.5\%的mAP,与我们方法获得的58.5\%相比).一个替换的方法(an alternative)是建立一个滑动窗口检测器(sliding-windows detector).CNNs已经用于这种方式至少二十年(two decades)，通常用于受限的物体类别(constrained object categories)，如人脸和行人(pedestrians)。为了保持高空间分辨率(high spatial resolution)，这些CNN通常只有两个卷积层和池化层。我们也考虑过采用(adopt）滑动窗口的方法。但是位于我们网络顶层的单元units high up in our network),具有五个卷积层，在输入图像中有非常大的感受野(receptive field)(195*195 pixels)和步长(stride)(32*32 pixels),使得在滑动窗口范式(paradigm)下精确的定位成为一个开放的技术难题
+
+相反(instead),我们通过在"使用区域识别"范式内操作，来解决CNN定位问题,这个范式被成功的用于目标检测和语义分割.
+在测试时间，我们的方法为输入图像生成大约2000个与分类无关(category-independent)的区域候选，使用CNN从每个候选中提取(extract)固定长度的特征向量，然后使用特定类别的线性SVM对每个区域进行分类。我们使用一个简单的技术(放射图像变形 affine image warping),来计算每个区域候选对应的固定大小的CNN输入，而不考虑区域的形状(regardless of).图1概述了(overview)我们的方法并突出了(highlights)我们的一些结果。由于我们的系统将区域候选与CNN结合在一起，因此我们将该方法称为R-CNN(dub the method R-CNN)：Regions with CNN features
+
+在检测中面临的第二个挑战是带标签数据是稀缺的(scarce),并且目前可用的数量不足以(be insufficient)训练一个大型CNN.这个问题的传统解决方案是使用无监督预训练,然后紧跟着监督微调.
 \end{abstract}
 \end{document}
