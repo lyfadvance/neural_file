@@ -104,4 +104,28 @@ ILSVRC 2012研讨会期间，ImageNet结果的重要性引起了激烈的争论(
 \subsection{模块设计}
 \paragraph{区域候选.} 最近的各种论文提供生成类别独立的区域候选的方法。例子包括:objectness,selective search,category-independent object proposals,constrained parametric min-cuts(CPMC),multi-scale combinatorial grouping,和Ciresfort等人 [6]，他们通过将CNN应用于定期间隔的方形作物来检测有丝分裂细胞，这是区域候选的特例(special case of region proposals),既然R-CNN 对特殊的区域候选方法是不可知的(agnostic),我们使用selective search来确保与之前(prior)检测工作的可控的(controlled)比较
 \paragraph{特征提取.} 我们从每个区域候选提取4096维的特征向量，通过使用Krizhevsky提出的CNN的Caffe方案。通过在五个卷积层和两个全连接层中前向传播(forward propagating)一个mean-subtracted 227*227RGB图像，来计算特征。我们建议读者参考[22,23]来得到更多的网络架构细节。
+
+为了计算一个区域候选的特征，我们首先需要把那个区域的图像数据转化成与CNN兼容的形式(CNN架构需要固定的227*227像素大小).在诸多我们任意形状的区域的可能的变换中，我们选择(opt for)最简单的.不管候选区域的大小或长宽比(aspect ratio)，我们将其周围的一个紧密包围盒中的所有像素扭曲(warp)到所需的大小。Prior to warping, we dilate the tight bounding box so that at the warped size there are exactly p pixels of warped image context around the original box (we use p = 16). 图二显示了变形后的训练区域的随机样本。补充材料讨论了变形的替代方法(The supplementary material discusses alternatives) to warping)
+
+\subsection{测试时间内的检测}
+在测试时间内,我们在测试图片上运行了select search,提取了差不多2000区域候选(我们在所有的实验中选择了select search的"fast mode").我们对每个候选进行变形，并且在CNN中前向传播它，以便从所需的(desired=wanted)层次中读取特征.然后对每一个类，我们使用在那个类上训练出来的SVM给每个被提取的特征向量打分.在给定一个图像中所有被打分的区域后，我们应用一个贪婪非最大化抑制(对每个类独立地使用),如果一个区域的与较高得分的选定区域交叠的交集(intersection-over-union)（IoU）大于学习阈值，则拒绝该区域
+
+\paragraph{运行时间分析.}两个性质使得检测非常高效.首先，CNN的所有参数被所有的分类共享。其次，被CNN计算得到的特征向量是低维的，当与其他的一般方法比较，比如说spatial pyramids with bag-of-visual-word encodings(使用视觉词袋编码的空间金字塔).例如，在UVA检测系统中使用的特征比我们的要大两个数量级(two orders of magnitude larger than)(360k vs 4k-dimensional)
+
+这种共享的结果是花在计算区域候选和它的特征的时间被分摊(amortized)到所有的类别上.唯一的特定类别的计算是，特征和SVM权重和非最大化抑制之间的点积运算。实际上,一个图片的所有的点积运算被批量为一个 矩阵相乘运算.特征矩阵是2000*4096,以及SVM权重矩阵是4096*N.
+
+这个分析表明，R-CNN可以扩展到(scale to)数千个对象类别，而并不需要求助于(resorting to)近似技术，比如hashing.甚至即使有100k个类别，矩阵相乘只需要10秒，在一个现代多处理器CPU上。这种高效并不只是使用区域候选和共享的特征的结果。UVA系统，因为它的高维特征，会慢两个数量级，并且需要134GB的内存来存储100k个线性预测器，与我们的低维特征只需要1.5GB相比.
+
+将R-CNN与Dean等人的最近的工作进行对比(contrast to)也是非常有趣的。他们的工作主要集中在使用DPMs和hashing来做scalable detection.他们报告了在introducing 10k distractor classes的情况下，VOC 2007每个图片运行5分钟，获得了16\%的mAP.没有我们的方法，10k的检测器可以在CPU上运行差不多1分钟，并且因为没有采取近似手段，mAP会保持(remain at)在59\%(section 3.2)
+\subsection{训练}
+\paragraph{监督预训练.}我们在带有图像级注释（image annotations)（即没有边界框标签）的大型辅助数据集（ILSVRC 2012）上有区别地(discriminatively)预先训练了CNN。使用开源代码Caffe CNN库来做预训练.简而言之(in brief)，我们的CNN几乎与Krizhevsky等人的表现相匹配,获得ILSVRC 2012验证集的比第一名高2.2百分点的错误率。 这种差异(discrepancy)是由于训练过程的简化
+
+\paragraph{专门领域的微调.}为了将我们的CNN适配到新的任务(检测),新的定义域(变形的VOC 窗口),我们继续使用随机梯度下降(SGD)训练CNN的参数，只使用VOC的变形后的区域候选作为输入。除了(aside from)用随机初始化的21路分类层（对于20个VOC类加上背景）替换CNN的特定于ImageNet的1000路分类层之外，CNN体系结构不变。我们将与实际的框重叠区域$\geq 0.5$IoU的区域候选作为该框所在类别的正例，其余的做反例。我们以0.001的学习率开始SGD(初始预训练率的1/10th),这允许在进行微调取得进展的同时，不破坏(clobber)初始化.在每一次SGD的迭代中，我们平均采样32正例窗口(在所有的类别中)和96个背景窗口来构建一个138大小的mini-batch.我们偏向(bias)正例窗口采样，因为它们与背景相比极其罕见。
+
+\paragraph{对象类别分类器.}考虑训练一个二分类器(binary classifier)来检测车辆.很显然，一个紧紧围绕(tightly enclosing)汽车的图像区域应该是一个正例.类似的(similarly),很显然一个跟车没关系的背景区域应该是一个反例.不怎么明显的是怎么给一个部分与车重叠的区域贴标签。我们通过一个IoU重叠阈值来解决这个问题,在这个阈值之下区域被认定为反例。重叠阈值,0.3,是在验证集上网格搜索{0,0.1,....,0.5}得到的。我们发现仔细选择这个阈值是非常重要的。把它设为0.5,mAP下降了5个点，相同的，把它设为0，mAP下降了4个点。Positive examples are defined simply to be the ground-truth bounding boxes for each class
+
+一旦特征被提取，并且训练集标签被确定下来，我们对每个类优化一个线性SVM。因为训练数据太大，不能放进内存中，我们采用standard hard negative mining method.hard negative mining 收敛(converge)非常快，而且在实际中,一遍通过所有图片后，mAP就停止增长。
+
+在补充材料中，我们讨论了为什么在fine-tuning阶段和(versus)SVM training阶段，正例和反例在这两个阶段中定义不同。我们也讨论了为什么训练检测分类器而不是简单地使用fine-tuned CNN的最后一层的输出是必要的。
+\section{在PASCAL VOC 2010-12 数据集上的结果}
 \end{document}
