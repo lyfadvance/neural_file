@@ -1,0 +1,79 @@
+\documentclass[a4paper,UTF8]{ctexart}
+%\usepackage{ctex}使用该句会报redefine的bug
+\usepackage[margin=1.25in]{geometry}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+%\usepackage[thmmarks, amsmath, thref]{ntheorem}
+\theoremstyle{definition}
+\newtheorem*{solution}{Solution}
+\newtheorem*{prove}{Proof}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+
+
+
+%code
+%\usepackage[utf8]{inputenc}
+ 
+\usepackage{listings}
+\usepackage{color}
+ 
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+ 
+\lstset{style=mystyle}
+%code
+
+
+
+
+
+
+
+
+
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Procedure:}}
+\renewcommand\refname{参考文献}
+
+%--
+
+%--
+\begin{document}
+\title{FCNN}
+\author{}
+\maketitle
+\section{全卷积网络}
+卷积网络中每一层的数据都是一个大小为h*w*d的三维数组,其中h和w是空间维度，d是特征或通道维度。第一层的输入是图像，其中像素size是h*w,有d个颜色通道。感受野
+卷积基于平移不变性(translation invariance),他们的基本部件(卷积，池化，和激活函数)在局部输入区域进行操作，只依赖于相对空间坐标(relative spatial coordinates).$X_{ij}$为在一个特定层
+\end{document}
